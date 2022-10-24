@@ -1,0 +1,27 @@
+name: "App CI"
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 * * * *'
+jobs:
+  linux-build-released-native:
+      name: Linux - Native build
+      runs-on: ubuntu-latest
+      strategy:
+        matrix:
+          java: [ 11, 17 ]
+      steps:
+        - uses: actions/checkout@v1
+        - uses: actions/cache@v1
+          with:
+            path: ~/.m2/repository
+            key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+            restore-keys: |
+              ${{ runner.os }}-maven-
+        - name: Install JDK {{ matrix.java }}
+          uses: joschi/setup-jdk@e87a7cec853d2dd7066adf837fe12bf0f3d45e52
+          with:
+            java-version: ${{ matrix.java }}
+        - name: Build with Maven
+          run: |
+            mvn -V -B -Dmaven.compiler.release=${{ matrix.java }} clean verify -Dnative -Dquarkus.native.container-build=true -Dquarkus.native.container-runtime=docker
