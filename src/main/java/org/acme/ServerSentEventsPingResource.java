@@ -20,6 +20,6 @@ public class ServerSentEventsPingResource {
     @Produces(MediaType.SERVER_SENT_EVENTS)
     public Multi<String> getPing() {
         System.out.println(" ===  PING === ");
-        return pongClient.getPong().map(response -> "ping " + response);
+        return Multi.createFrom().publisher(pongClient.getPong()).map(response -> "ping " + response);
     }
 }
